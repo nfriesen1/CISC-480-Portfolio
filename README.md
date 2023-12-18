@@ -7,7 +7,7 @@ Some of my favorite projects can be found under the "Projects" page on my [Perso
 
 <h3> Project 1: CISC 440 AI and Robotics Coding a Lego Mindstorm Robot: </h3>
 <h4>Background: </h4>
-<p>Our task was to build a Lego Mindstorm robot and edit a Python script that would cause the robot to be able to draw certain letters and short words</p>
+<p>Our task was to build a Lego Mindstorm robot and edit a Python script that would cause the robot to be able to draw certain letters and short words.</p>
 <h4>Python Script Code: </h4>https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%201%20Files/Project%201.py
 <h4>Setup: </h4>
 <ol>
@@ -44,3 +44,5 @@ https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%202%20Files/St
     Change the settings to your liking and click ok.  This will create a neural network result page like this: https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%202%20Files/Final_Data%20-%20Neural.jrp
   </li>
 </ol>
+
+If you would like to learn more about this, you can refer to our final project paper here: https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%202%20Files/Final%20Project%20Paper%20Updated.docx
