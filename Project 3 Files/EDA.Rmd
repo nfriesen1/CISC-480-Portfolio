@@ -1,0 +1,202 @@
+---
+title: "EDA"
+author: "Noah Friesen, Aleena Nguyen & Nate Goenner"
+date: "2023-02-28"
+output: html_document
+---
+
+### Load Relevant R Libraries
+```{r warning=FALSE, message=FALSE}
+library(rmarkdown); library(knitr); library(readxl)
+library(moments); library(corrplot); library(pso)
+library(psych); library(GPArotation); library(lavaan)
+```
+
+
+### Dataset
+
+```{r}
+
+crash_data <- read_excel("Project_Data.xlsx")
+crash_data_matrix = as.matrix(crash_data)
+
+
+```
+
+### Key-Value Table
+
+1.	NON-FATAL: 0, FATAL: 1
+2.	NO SUSPECTED SERIOUS INJURY: 0, SUSPECTED SERIOUS INJURY:1	
+3.	NO SUSPECTED MINOR INJURY: 0, SUSPECTED MINOR INJURY: 1	
+4.	NO POSSIBLE INJURY: 0, POSSIBLE INJURY: 1	
+5.	APPARENT INJURY: 0, NO APPARENT INJURY (PROPERTY DAMAGE ONLY): 1	
+6.	PERSONS_INJURED	
+7.	VEH_COUNT	
+8.	COLLISION_TYPE: Human On Human: 0, Human On Other: 1	
+9.	WEATHER_CONDITION : No Adverse Condition: 0, Adverse Condition: 1	
+10.	LIGHT_CONDITION: Light 0, Darkness 1	
+11.	ROADWAY_SURFACE_COND: Dry 0, Other 1	
+12.	ROADWAY_ALIGNMENT: Straight 0, Other 1	
+13.	ROADWAY_SURFACE_TYPE: Smooth 0, Rough 1	
+14.	ROADWAY_DEFECT: No Defect 0, Defect 1	
+15.	ALCOHOL: 1 NOTALCOHOL: 0	
+16.	ANIMAL: 1, NO_ANIMAL: 0	
+17.	DISTRACTED: 1 NOTDISTRACTED: 0	
+18.	DRUG: 1 NODRUG: 0		
+19.	SPEED_DIFF_MAX	
+20.	SENIOR: 1 NOTSENIOR: 0	
+21.	YOUNG: 1 NOTYOUNG: 0
+
+
+### Removal/Adjustments to Orignial Data Set
+
+  First, we shrank the original data set of 800,000+ cases to a data set of 200 cases.  We also removed the date and year variables since they were all during the same year around the same season during the year,  Next, we changed the crash severity "KABCO" scale to a binary dummy variable scale for each letter.  This led to the creation of five new dimensions: 
+NON-FATAL: 0, FATAL: 1 (K); 
+NO SUSPECTED SERIOUS INJURY: 0, SUSPECTED SERIOUS INJURY:1 (A);	
+NO SUSPECTED MINOR INJURY: 0, SUSPECTED MINOR INJURY: 1 (B);	
+NO POSSIBLE INJURY: 0, POSSIBLE INJURY: 1 (C);	APPARENT INJURY: 0, NO APPARENT INJURY (PROPERTY DAMAGE ONLY): 1	(O). 
+
+  We also replaced the categorical dimensions to do with collision type, weather conditions, light conditions, and road conditions with new dummy binary variables: COLLISION_TYPE: 
+Human On Human: 0, Human On Other: 1; WEATHER_CONDITION : No Adverse Condition: 0, Adverse Condition: 1; 
+LIGHT_CONDITION: Light 0, Darkness 1; ROADWAY_SURFACE_COND: Dry 0, Other 1; ROADWAY_ALIGNMENT: Straight 0, Other 1; ROADWAY_SURFACE_TYPE: Smooth 0, Rough 1; ROADWAY_DEFECT: No Defect 0, Defect 1
+  
+  Finally, we replaced distraction type and human characteristic binary categorical variables with binary numeric variables:
+ALCOHOL: 1 NOTALCOHOL: 0;	
+ANIMAL: 1, NO_ANIMAL: 0;	
+DISTRACTED: 1 NOTDISTRACTED: 0;	
+DRUG: 1 NODRUG: 0;		
+SPEED_DIFF_MAX	SENIOR: 1 NOTSENIOR: 0;	
+YOUNG: 1 NOTYOUNG: 0
+
+
+
+### Central Tendency
+
+```{r}
+#Central Tendencies/Means: 
+colMeans(crash_data_matrix)
+
+#Dispersion/Standard Deviations:
+apply(X = crash_data_matrix, MARGIN = 2, FUN = sd)
+#Shape
+kurtosis(crash_data_matrix)
+skewness(crash_data_matrix)
+#Dot Plots:
+dotchart(crash_data_matrix[,1], xlab = "Fatal")
+dotchart(crash_data_matrix[,2], xlab = "Serious Injury")
+dotchart(crash_data_matrix[,3], xlab = "Minor Injury")
+dotchart(crash_data_matrix[,4], xlab = "Possible Injury")
+dotchart(crash_data_matrix[,5], xlab = "Injury")
+dotchart(crash_data_matrix[,6], xlab = "Persons Injured")
+dotchart(crash_data_matrix[,7], xlab = "Vehicle Count")
+dotchart(crash_data_matrix[,8], xlab = "Collision Type")
+dotchart(crash_data_matrix[,9], xlab = "Weather Condition")
+dotchart(crash_data_matrix[,10], xlab = "Quality of Light")
+dotchart(crash_data_matrix[,11], xlab = "Roadway Surface Conditon")
+dotchart(crash_data_matrix[,12], xlab = "Roadway Allignment")
+dotchart(crash_data_matrix[,13], xlab = "Roadway Surface Type")
+dotchart(crash_data_matrix[,14], xlab = "Roadway Defect")
+dotchart(crash_data_matrix[,15], xlab = "Alcohol")
+dotchart(crash_data_matrix[,16], xlab = "Animal")
+dotchart(crash_data_matrix[,17], xlab = "Distracted")
+dotchart(crash_data_matrix[,18], xlab = "Drugs")
+dotchart(crash_data_matrix[,19], xlab = "Speed Diference Max")
+dotchart(crash_data_matrix[,20], xlab = "Senior Age")
+dotchart(crash_data_matrix[,21], xlab = "Young Age")
+```
+
+Looking at the dot plots we see most of the crashes in this data set were not fatal and do not typically result in some injury. If there is an injury, we see normally it is relatively minor.  We also see a decent number of crashes occurring under abnormal conditions such as dark light, abnormal road surfaces, alcohol impairment, distracted driving, and roadway alignment.  We can also see that crashes involving drugs and alcohol seem to be relatively rare at least within our data. The actual type of collisions seems to be split between human-on-human and human-on-other. Lastly, both being of senior and a younger age seem to appear in a number of different crashes. 
+When looking at the mean for vehicle number, we see that most crashes occur between two vehicles with a speed differential max of 10. The average number of people injured also seems appears to be zero.
+
+
+
+### 1-D Outliers
+
+
+```{r}
+#Mean
+colMeans(crash_data_matrix)
+#SD
+apply(X = crash_data_matrix, MARGIN = 2, FUN = sd)
+#Skew
+skewness(crash_data_matrix)
+#Kurtosis
+kurtosis(crash_data_matrix)
+
+remove <- which(abs(scale(crash_data_matrix)) > qnorm(1 - 0.001/ 2))
+crash_data_matrix_2 <- crash_data_matrix
+crash_data_matrix_2[remove]  <- NA
+
+#Mean w/o outliers
+colMeans(crash_data_matrix_2, na.rm = T)
+#Sd w/o outliers
+apply(X = crash_data_matrix_2, MARGIN = 2, FUN = sd, na.rm = T)
+#Skew w/o outliers
+skewness(crash_data_matrix_2, na.rm = T)
+#Kurtosis w/o outliers
+kurtosis(crash_data_matrix_2, na.rm = T)
+
+```
+
+
+By removing outliers at a 0.01% threshold, dimensions 1, 4, 6, 7, 13,14,16, 18, 19, and 20 measures of central tendency and shape were impacted.  Dimension 1’s mean = 0.001 and sd = 0.997 dropped to mean = 0 and sd = 0.  This is likely because there were only two fatal accidents in our dataset, so these were deemed as outliers.  And, since dimension is 1 is binary, removing the two fatal crashes resulted in both the mean and sd dropping to 0.  Similar results were also seen in dimensions 4, 13, 14, 16 since having a possible injury, rough road surface type, having a defected road, and crashing with an animal were all so rare that their occurrences were seen as outliers and changed they’re means and sds to 0.  Although rare, I think we want to keep these outliers since they could be important predictors/outcomes for our data.  In the rest of the dimensions, removing the outliers decreases all the means and sds to values above zero.  Since removing the outliers had an impact, these outliers were influential and therefore should likely be removed.
+
+For most of the dimensions, we see relatively low skew numbers. Most are slightly skewed to the right. Dimensions 1 and 6 are the only two skewed to the left although very slightly. We see the biggest right skews in dimensions 2, 14, and 19 with their skew value being over 9. We also see when removing the outliers, they don’t seem to influence skewness directly. 
+
+For kurtosis, we see most of the dimensions are leptokurtic with some high values in dimensions 9, 14, 15, 19, and 21. A few dimensions are platykurtic like 1,4,6, 12, and 13. We see that removing the outliers here don’t seem to have a huge influence as well on the kurtosis. 
+
+
+
+
+### Covariance and Correlation 
+```{r}
+#covariance matrix
+crash_cov <- cov(crash_data_matrix)
+crash_cov
+#correlation matrix
+crash_cor <- cor(crash_data_matrix)
+crash_cor
+#correlation plots
+corrplot(crash_cor, method = "square", lower.panel = NULL)
+
+```
+
+There was a strong positive correlation between “non-fatal/fatal” and “weather condition”. If there was an adverse weather condition, it was likely that the accident was fatal.
+There was a strong negative correlation between “vehicle count” and “collision type”. As vehicle count went up, there were more instances of human-on-human collisions (human-on-human was coded as 0). 
+There was a relatively strong positive correlation between “persons injured” and “roadway surface type”. If the road was rough, it was likely that one or more people were injured.
+There was a relatively strong positive correlation between “light condition” and “alcohol”. If it was dark, it was likely that alcohol was involved.
+There was a strong positive correlation between “road condition” and “weather condition”. If there were no adverse weather conditions, it was likely that the road condition was dry. 
+For all injury related variables (e.g., whether there was a suspected/apparent/possible/serious/minor injury), there was either a strong negative or positive correlation, depending on whether injuries were coded as 0 or 1.
+
+
+### 2-D Outliers
+#### Part (a)
+```{r}
+# Mahalanobis distance for all pairs in matrix
+
+
+for(x in 1:(ncol(crash_data_matrix)-1)){
+  for (y in (x+1):ncol(crash_data_matrix)) {
+  m1  <- mahalanobis(x = crash_data_matrix[, c(x, y)], center = c(mean(crash_data_matrix[,x]), mean(crash_data_matrix[,y])), cov = cov(crash_data_matrix[,c(x,y)]))
+
+  print("Correlation with outliers")
+  print(cor(crash_data_matrix[,c(x,y)], use = "complete.obs"))
+
+  aboveThreshold <- which(m1 >  qchisq(p = 1 - 0.001, df = 2))
+
+  print("Correlation without outliers")
+  print(cor(crash_data_matrix[-aboveThreshold,c(x,y)]))
+  }
+}
+```
+
+When removing outliers with a 0.01% threshold there were many pairs of dimension that were influenced. Too see if there was substantial influence, I looked to see if removing outliers had at least a 0.3 change in the value of the correlation value or shifted it up/down a level of correlation.   One pair influenced is dimensions 3 and 5 moving from strongly negatively correlated (-0.7316857) to having the same correlation values with zero variance (NA).  This may be because both dimensions three and five are binary variables so removing outliers could make all the values 0.  
+
+Another pair was dimensions 3 and 6 that moved from moderately correlating (0.5885023) to strongly correlating (0.7315106) having a 0.1430083 difference.  This makes sense because by removing outliers, if a case is more likely to have a suspected minor injury, then the number of people injured also increases, so they should be strongly correlated.  
+The next pair influenced was 6 and 13 moving from a correlation value of 0.3349058 (weakly correlated) to no correlation value because of zero variance (NA).  Originally, I thought the value with outliers made since because I could see that more injuries could occur if there was a slightly higher likelihood of being on a rough road, but after removing outliers, there is no variance.  Could be an effect from using binary variables.  
+
+Another influenced pair were dimensions 9 and 11 which moved from 0.8887383 (strongly correlated) to 1 (perfectly correlated) after removing outliers with a total difference of 0.1112617.  This makes sense because if the weather condition was adverse, it most likely is raining/snowing causing the road condition to be wet.  
+
+Our final pair of values influenced was 10 and 15 which moved from 0.3196167 (weakly correlated) to zero variance (NA).  Again, was likely an effect of 10 and 15 being binary variables.
+
+

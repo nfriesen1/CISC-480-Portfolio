@@ -1,0 +1,214 @@
+---
+title: "Project EFA"
+author: "Noah Friesen, Nate Goenner, Aleena Nguyen"
+date: "2023-04-03"
+output: html_document
+---
+
+### Load Relevant R Libraries
+```{r warning=FALSE, message=FALSE}
+library(rmarkdown); library(knitr); library(readxl)
+library(moments); library(corrplot); library(pso)
+library(psych); library(GPArotation); library(lavaan)
+```
+
+
+### Dataset
+
+```{r}
+
+crash_data <- read_excel("Project_Data.xlsx")
+crash_data_matrix = as.matrix(crash_data)
+
+
+```
+
+### Key-Value Table
+
+1.	NON-FATAL: 0, FATAL: 1
+2.	NO SUSPECTED SERIOUS INJURY: 0, SUSPECTED SERIOUS INJURY:1	
+3.	NO SUSPECTED MINOR INJURY: 0, SUSPECTED MINOR INJURY: 1	
+4.	NO POSSIBLE INJURY: 0, POSSIBLE INJURY: 1	
+5.	APPARENT INJURY: 0, NO APPARENT INJURY (PROPERTY DAMAGE ONLY): 1	
+6.	PERSONS_INJURED	
+7.	VEH_COUNT	
+8.	COLLISION_TYPE: Human On Human: 0, Human On Other: 1	
+9.	WEATHER_CONDITION : No Adverse Condition: 0, Adverse Condition: 1	
+10.	LIGHT_CONDITION: Light 0, Darkness 1	
+11.	ROADWAY_SURFACE_COND: Dry 0, Other 1	
+12.	ROADWAY_ALIGNMENT: Straight 0, Other 1	
+13.	ROADWAY_SURFACE_TYPE: Smooth 0, Rough 1	
+14.	ROADWAY_DEFECT: No Defect 0, Defect 1	
+15.	ALCOHOL: 1 NOTALCOHOL: 0	
+16.	ANIMAL: 1, NO_ANIMAL: 0	
+17.	DISTRACTED: 1 NOTDISTRACTED: 0	
+18.	DRUG: 1 NODRUG: 0		
+19.	SPEED_DIFF_MAX	
+20.	SENIOR: 1 NOTSENIOR: 0	
+21.	YOUNG: 1 NOTYOUNG: 0
+
+
+### Covariance and Correlation
+
+```{r}
+#correlation matrix
+crash_cor <- cor(crash_data_matrix)
+crash_cor
+
+# Response
+R <- crash_cor[1:6,1:6]
+R
+
+# Predictor
+P <- crash_cor[7:21,7:21]
+P
+
+```
+
+
+### Intrinsic Dimensionality
+
+```{r}
+# Response Variables
+
+response <- eigen(R)$values
+response
+
+# Predictor Variables
+
+predictor <- eigen(P)$values
+predictor
+
+
+# Kaiser's Criterion
+
+which(predictor > 1.0)
+which(response > 1.0)
+
+# Joliffe's Criterion
+
+which(predictor > 0.7)
+which(response > 0.7)
+
+# Inflection Point Criterion
+
+plot(response, type = "b")
+plot(predictor, type = "b")
+
+
+
+```
+
+
+
+We plan to use Kaiser's criterion for our intrinsic dimensionality.  Based on this criteria, we have four relevant factors for our response variables and 7 relevant factors for the predictors. In our response variable our skree plot agrees with our Kaiser's significant variables of 4. In our predictors' plot, the inflection point is at index 13, showing that there are 13 significant factors which is different than our Kaiser's significant factor of 7.  Joliffe's however had eleven significant factors for our predictors instead of seven, but we think Kaiser's is the optimal criterion for our project, so we will just use the predictor's seven significant factors for the rest of our EFA. After finding our cumulative variance, we found that 7 factors lost too much variance (above 30%) compared to the original dimensions for our predictor variables, so we switched to 8 factors instead of 7.
+
+
+### Unrotated Loading Matrix and Optimal Orthogonal Rotation
+
+```{r}
+# Un-rotated Response
+R_mat <- pca(r = R, nfactors = 4, rotate = "none")
+R_mat
+
+# Un-rotated Predictor
+P_mat <- pca(r = P, nfactors = 8, rotate = "none")
+P_mat
+
+#Orthogonal Response
+rotatedR_mat <- pca(r = R, nfactors = 4, rotate = "varimax")
+rotatedR_mat
+
+#Orthogonal Predictor
+rotatedP_mat <- pca(r = P, nfactors = 8, rotate = "varimax")
+
+rotatedP_mat
+
+
+
+
+```
+
+
+### Optimal Oblique Rotation
+
+```{r}
+
+ObliqueResponse<- pca(r = R, nfactors = 4, rotate = "oblimin")
+ObliquePredictor<- pca(r = P, nfactors = 8, rotate = "oblimin")
+
+ObliqueResponse
+ObliquePredictor
+
+
+which(abs(ObliqueResponse$Phi) > 0.3 & ObliqueResponse$Phi < .99)
+which(abs(ObliquePredictor$Phi) > 0.3 & ObliquePredictor$Phi < .99)
+
+
+```
+
+
+After looking at the factor correlation matrices, we see no values above the absolute value of .30, a common threshold, in either in the response variables or predictor variables. Therefore, oblique rotation is not justified for either of them, so we will keep our orthogonal rotated matrices for the rest of the EFA.
+ 
+
+
+### Remaining Complexity/Lack of Purity
+
+```{r}
+
+
+#Response Remaining Complexity
+
+which(rowSums(abs(R_mat$loadings[]) >0.3) >= 2)
+length(which(rowSums(abs(R_mat$loadings[]) >0.3) >= 2))
+which(rowSums(abs(rotatedR_mat$loadings[]) >0.3) >= 2)
+length(which(rowSums(abs(rotatedR_mat$loadings[]) >0.3) >= 2))
+
+#Predictor Remaining Complexity
+which(rowSums(abs(P_mat$loadings[]) >0.3) >= 2)
+length(which(rowSums(abs(P_mat$loadings[]) >0.3) >= 2))
+which(rowSums(abs(rotatedP_mat$loadings[]) >0.3) >= 2)
+length(which(rowSums(abs(rotatedP_mat$loadings[]) >0.3) >= 2))
+
+
+
+```
+
+After orthogonal rotation, the response variables complexity stayed the same at 2 complex variables.  However before rotating, the complex variables were 2 (No Suspected Serious Injury) and 3 (No Suspected Minor Injury).  After rotating 3 was still complex, but 2 was no longer and replaced by 6 (Persons Injured).  Orthogonal rotation on our predictor variables was very influential on the complexity lowering our complex dimensions from 15 to 4.  Every variable 7 - 21 (refer to key-value table above) was complex pre-rotation.  Post rotation, only 10 (Light_Condition), 16 (Animal/No Animal), 17(Distracted/Not Distracted), and 21 (Young/Not Young) remained complex.
+
+### Variance
+
+```{r}
+#Response Variance
+
+Var_R <- colSums(rotatedR_mat$loadings[]^2) / 6
+Var_R
+
+CummulVar_R <- sum(Var_R)
+CummulVar_R
+
+#Predictor Variance
+Var_P <- colSums(rotatedP_mat$loadings[]^2)/15
+Var_P
+
+CummulVar_P <- sum(Var_P)
+CummulVar_P
+
+# Response Communality
+
+Com_R <- rotatedR_mat$communality
+Com_R
+
+# Predictor Communality
+Com_P <- rotatedP_mat$communality
+Com_P
+
+```
+
+For our response variables, the communality of dimension 1 was around 99.8%, dimension 2 was around 98.6%, dimension 3 was around 98.2%, dimension 5 was around 96%, and dimension 6 was around 85%. None of these dimensions had a communality under 70%, so data loss in excess of the common threshold, 30%, was avoided.
+
+For the response variables factor variance, factor 1 explains around 40% of the variance, factor 2 around 21%, factor 3 around 18%, and factor 4 around 17%. The cumulative proportion explained by the four factors is just over 96%, indicating the solution lost just under 4% of the variance in the original dimensions. This is below the common threshold of 30%, indicating our four-factor solution was sufficient to retain an acceptable amount of information.
+
+For our predictor variables, the communality of dimension 7 was around 78%, dimension 8 was around 77.8%, dimension 9 was around 91.9%, dimension 10 was around 61.3%, dimension 11 was around 89.1%, dimension 12 was around 44.5%, dimension 13 was around 73.6%, dimension 14 was around 87.8%, dimension 15 was around 73.2%, dimension 16 was around 65.8%, dimension 17 was around 70.3%, dimension 18 was around 72%, dimension 19 was around 78.9%, dimension 20 was around 60.7%, and dimension 21 was around 73.5%. Dimensions 10, 12, and 20 had communality below 70%. However, the majority of the dimensions maintained a communality of over 70%, which helped minimize data loss in excess of the common threshold of 30%.
+
+For the predictor variables factor variance, factor 1 explains around 13% of the variability, factor 2 explains around 14% of the variability, factor 3 around 8%, factor 4 around 7%, factor 5 around 7%, factor 6 around 8%, factor 7 around 9%, and factor 8 around 7%. The cumulative proportion explained by the eight factors is just over 73%, indicating the solution lost just under 27% of the variance in the original dimensions. This is not beyond the common threshold of 30%, indicating our eight-factor solution was sufficient to retain an acceptable amount of information.

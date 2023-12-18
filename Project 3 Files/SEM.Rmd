@@ -1,0 +1,191 @@
+---
+title: "Project SEM"
+author: "Noah Friesen, Aleena Nguyen, & Nate Goenner"
+date: "2023-05-04"
+output: html_document
+---
+
+<center> <h1>SEM</center>
+
+### Load Relevant R Libraries
+```{r warning=FALSE, message=FALSE}
+library(rmarkdown); library(knitr); library(readxl)
+library(moments); library(corrplot); library(pso)
+library(psych); library(GPArotation); library(lavaan)
+
+```
+
+
+### Project Data 
+```{r}
+
+
+
+crash_data <- read_excel("Project_Data.xlsx")
+crash_data_matrix = as.matrix(crash_data)
+
+SIG <- cov(crash_data_matrix)
+SIG
+
+Standard <- cor(crash_data_matrix)
+Standard
+
+
+
+```
+
+### Construct SEM and Degrees of Freedon
+
+```{r}
+
+EQN <- '
+        # Measurement Model (Factor Definition)
+        
+        Speed_Component =~ Speed_Differential
+        Road_Type =~ Alignment + Roadway_Surface
+        Those_in_Collision =~ Vehicle_Count + Collision_Type
+        Speed_in_Day_Conditions =~ Weather + Roadway_Condition
+        Impeded_Driving_And_Experience =~ Drugs
+        Ability_To_See =~ Senior
+        Drunk_Driving =~ Alcohol
+        Minor_Injuries =~ Possible_Injury
+        Major_Injuries =~ Serious_Injury
+        
+        # Covariances
+        
+        Speed_Component ~~ Animal_Involvement
+        Those_in_Collision ~~ Animal_Involvement
+        Road_Type ~~ Animal_Involvement
+        Speed_in_Day_Conditions ~~ Distraction
+        Impeded_Driving_And_Experience ~~ Distraction
+        Drunk_Driving ~~ Distraction
+        Impeded_Driving_And_Experience ~~ Young
+        Ability_To_See ~~ Young
+        Drunk_Driving ~~ Light
+        Ability_To_See ~~ Light
+
+        
+        #Effects
+        
+        Minor_Injuries ~ Road_Type + Speed_Component + Those_in_Collision + Ability_To_See + Drunk_Driving + Roadway_Defect + Impeded_Driving_And_Experience + Speed_in_Day_Conditions
+        
+        #Yellow Line
+        Major_Injuries ~ Those_in_Collision + Speed_Component + Road_Type + Roadway_Defect + Drunk_Driving + Ability_To_See + Impeded_Driving_And_Experience + Speed_in_Day_Conditions 
+#Red Line
+        Fatality ~ Those_in_Collision + Speed_Component + Road_Type + Roadway_Defect + Ability_To_See + Drunk_Driving + Impeded_Driving_And_Experience + Speed_in_Day_Conditions
+#Blue Line 
+   No_Injuries ~ Those_in_Collision + Speed_Component + Road_Type + Roadway_Defect + Ability_To_See + Drunk_Driving + Impeded_Driving_And_Experience + Speed_in_Day_Conditions
+
+'        
+        
+  
+MOD <- sem(model = EQN, sample.cov = Standard, sample.nobs = 200)
+MOD
+
+parameterEstimates(MOD)
+
+#df = 96
+# The difference between our sample size and the total number of non-fixed parameters that were estimated is 96.  Because our degrees of freedom are above 0, our model is identifiable. 
+
+        
+        
+        
+
+
+```
+
+### 2. Multi-Dimensional Factor Effects Analysis and 3. Predictor and Response Effects Analysis
+
+
+##### Based on a significance threshold of p-value < 0.05, the following significant factor relationships are found:
+
+1. Road_Type =~ Roadway_Surface (estimate: 1.078, p-value: 0.001)
+Practical significance: Roadway_Surface type has a strong, positive effect on  Road_Type.  Since the p-value is very small (p = 0.001), and the estimate is greater than most other significant parameters, we can conclude that there is a highly positive, significant effect on road type from roadway surface type.
+
+2. Those_in_Collision =~ Collision_Type (estimate: -0.631, p-value: 0.000)
+Practical significance:  Collision-Type has a strong, negative effect on Those_in_Collision.  Since the p-value is basically 0 and the estimate is relatively large, we can say that there is a significant negative effect from collision type and the number of vehicles involved in the collision.
+
+3. Speed_in_Day_Conditions =~ Roadway_Condition (estimate: 1.170, p-value: 0.000)
+Practical significance: Roadway_Condition has a strong, positive effect on Speed_in_Day.  Since the p-value is basically 0 and the estimate is the largest out of all significant parameters, we can say that there is a highly positive, significant effect from roadway condition to the speed in day conditions. For example, people will likely speed on paved roads compared to bumpy roads.
+
+4. Those_in_Collision ~~ Animal_Involvement (estimate: -0.145, p-value: 0.031)
+Practical significance: Animal_Involvement has a weak, negative effect on Those_In_Collision.  The p-value is below the threshold but is not as close to zero as other p-values. The estimate is also weak. We can say that there is a significant, weak, positive effect from speed component to fatality.
+
+5. Speed_in_Day_Conditions ~~ Distraction (estimate: -0.126, p-value: 0.035)
+Practical significance:  Speed_in_Day_Conditions and Distraction have a weak, negative relationship.  The p-value is also below 0.05, but not as low as the ones above. The estimate is also lower as well. There is a significant, weak, negative relationship between the speed in day conditions and distraction. 
+
+6. Drunk_Driving ~~ Light (estimate: 0.300, p-value: 0.000)
+Practical significance: There is a moderate, positive relationship between drunk driving and light conditions, suggesting that drunk driving incidents may be more likely to occur during certain light conditions, especially during the dark.  The p-value is basically 0 and the estimate is moderate in magnitude. This means that there is a significant, moderately positive relationship between drunk driving and light conditions.
+
+7. Ability_To_See ~~ Light (estimate: -0.146, p-value: 0.036)
+Practical significance: There is a weak, negative relationship between a driver's ability to see and light conditions. Poor light conditions can negatively affect a driver's ability to see, which may increase the risk of accidents. Improving lighting conditions on roads may help to reduce accidents caused by poor visibility.  The p-value is below the threshold but is not as close to zero as some other p-values. The estimate is at the lower end. We can say that there is a significant, weak, negative relationship between the ability to see and light condition.
+
+8. Road_Type =~ Speed_in_Day_Conditions (p-value = 0.040, estimate = 0.097). 
+Practical Significance: Speed_in_Day_Conditions has a weak, positive effect on Road_Type.  The p-value is low and the estimate is very weak. Although it is significant, the estimate isn’t as large, suggesting that this relationship isn’t as important in our model. There is a significant, weak, positive effect from speed in day conditions and road type.
+
+9. Those_in_Collision =~ Speed_in_Day_Conditions (p-value = 0.015, estimate = -0.148).  
+
+Practical Significance:  Speed_in_Day_Conditions has a weak, negative effect on Those_in_Collision.  The p-value is low and the estimate is weak. There is a significant, weak, negative effect from speed in day conditions to those involved in the collision. 
+
+10. Those_in_Collision =~ Ability_To_See (p-value = 0.025, estimate = 0.153). 
+Ability_To_See has a weak, positive effect on Those_in_Collision.  The practical significance of this relationship might be related to visual obstructions or the role of visibility in collisions.  The p-value is low and the estimate is weak. There is a significant, weak, positive effect from the ability to see and those involved in the collision.
+
+11. Speed_in_Day_Conditions =~ Drunk_Driving (p-value = 0.020, estimate = -0.138).
+Drunk_Driving has a weak, negative effect on Speed_in_Day_Conditions.  The p-value is low and the estimate is weak. There is a significant, weak, negative effect from drunk driving and speed during day conditions effected by the likes of weather, road conditions and other distractions.
+
+
+
+#### 3. Significant Responses to Predictors
+
+1.	 No_Injuries ~ Those_in_Collision (p-value = 0.011, estimate = -0.264)
+There is a significant negative effect from those involved in the collision to no injuries. This suggests that as the number of individuals involved in the collision increases, the probability of having no injuries decreases. Focusing on reducing the number of people involved in collisions could lead to a decrease in injuries. For every one unit increase in Those_in_Collision, No_Injuries decreases by 0.264. The p-value is relatively low and the estimate is weak. There is a significant, weak, negative effect from those involved in the collision and no injury.
+
+2. No_Injuries ~ Drunk_Driving (p-value = 0.001, estimate = -0.252)
+There is a significant negative effect from drunk driving to no injuries. This suggests that as drunk driving increases, the likelihood of having no injuries decreases. Implementing stricter policies on drunk driving could lead to a decrease in injuries. For every one-unit increase in Drunk_Driving, No_Injuries decreases by 0.252. The p-value is very low, and the estimate is moderately weak. There is a significant, negative, moderately weak effect from drunk driving to no injury.
+
+3. No_Injuries ~ Speed_in_Day_Conditions (p-value = 0.034, estimate = 0.220)
+There is a significant positive effect from speed in day conditions to no injuries. This suggests that as speed in day conditions increases, the likelihood of having no injuries also increases. This could imply that lower speeds in day conditions might be more dangerous than previously assumed, or other factors may need to be considered in conjunction. For every one unit increase in Speed_in_Day_Conditions, No_Injuries increases by 0.220. The p-value is low and the estimate is moderately weak. There is a significant, positive, moderately weak effect from speed in day conditions to no injury.
+
+
+### 5. Relevant Indices and Model Fit 
+```{r}
+fitMeasures(MOD)
+#Using fitMeaures we can determine the value of several different relevant indices. For most of these indices, a value above .95 would indicate the model is a good fit for the data.
+```
+
+**NFI:** .878
+Evaluates the fit of the model by comparing its chi-square statistic to the chi-square statistic of the corresponding independence model. This is not above the threshold of .95 which we would want for this indice. 
+
+**NNFI:** .991
+Incorporates the degrees of freedom of both the original and independence model. This is above .95 which would indicate the model is a good fit for the data.
+
+**IFI:** .996
+The NFI and NNFI could underestimate the fit of a good model if the sample size is too low. The IFI shouldn’t do that. We do see again another value above .95 which would indicate the model is a good fit for the data. 
+
+**CFI:** .995
+Essentially does the same thing as the NFI but takes a different approach. We again want this number above .95 which it is. 
+
+**RMSEA:** .013
+Compares the detriment of using the actual model to the saturated model. We want low numbers for this one (below .08). We do have that which indicated the model is a good fit for the data
+
+**MFI:** .992
+Another indice we want to see above .95. Ours is .992. We again see evidence the model is a good fit for the data 
+
+**GFI:** .950
+This would indicate 95% of the variance and covariance within our original matrix can be explained by our SEM. For both the GIF and AGFI, we want to see higher values. 
+
+**AGFI:** .901
+The adjusted GFI (AGIF) adjusts the GFI based off how many parameters were used within the model Giving us a new number of 90.1%
+
+**PGFI:** .480
+We again want to see higher numbers in the PGFI. Our result of .480 would indicate the number of parameters included are probably unnecessary relative to how much covariability our model is able to explain  
+
+**AIC:** 9669.343   
+For the AIC, we want to see lower numbers. To determine if our model is a good fit for the data we would want to compare it to another model’s AIC. Whatever model’s AIC is lower would be the better fitting model. 
+
+We actually see that most of the values from fitMeasures are where we want them to be. The NNFI, IFI, CFI, RMSEA, MFI, GFI, and AGFI are all pretty within the thresholds we want. However, the NFI is lower than we would want. Overall, the model would seem to be a pretty good fit for the data. Although, the PGFI would indicate perhaps the amount of parameters utilized are unnecessary.  
+
+
+
+
+
