@@ -46,3 +46,23 @@ https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%202%20Files/St
 </ol>
 
 If you would like to learn more about this, you can refer to our final project paper here: https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%202%20Files/Final%20Project%20Paper%20Updated.docx
+
+<h3> Project 3: STAT 360 Comp STAT and Data Analysis Final Project Path Diagram </h3>
+<h4>Background: </h4>
+<p> For our final project, two other students and I looked at car crash data to see what factors lead to deadlier car crashes.  With our findings, we creating a path diagram showing all these factors and their connections to lower/higher mortality rates in car crashes.  We used R to clean and analyze our data.</p>
+<h4>Code: https://github.com/nfriesen1/CISC-480-Portfolio/tree/main/Project%203%20Files</h4>
+<h4>Setup: </h4>
+<ol>
+  <li>
+    Download our cleaned data file here: https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%203%20Files/Project_Data.xlsx
+  </li>
+    
+  <li>
+    Use our .RMD files and cleaned data to find useful information and connections about the data.
+  </li>
+  <li>
+    Use the info to create a large path diagram displaying connections between death rate in an accident and factors that lead to the accidents like this one: https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%203%20Files/Finished.drawio.png
+  </li>
+</ol>
+
+If you would like to learn more about our project, you can refer to our powerpoint: https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%203%20Files/STAT%20360%20Group%20Project%20Presentation.pptx and abstract: https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%203%20Files/Abstract.pdf
