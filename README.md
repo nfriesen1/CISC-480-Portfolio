@@ -1,68 +1,58 @@
-# CISC-480-Portfolio
+# CISC 480 Portfolio
 
-Throughout my time at University of Saint Thomas, I have worked on many fun and interesting projects.
-</br>
-</br>
-Some of my favorite projects can be found under the "Projects" page on my [Personal Website](https://nfriesen1.github.io/pages/projects.html) I made in my CISC 375, Web Development course.
+A selection of projects from my B.S. in Computer Science at the University of St. Thomas (graduated December 2023). They span robotics, machine learning and statistical modeling. More are on the [Projects page of my personal website](https://nfriesen1.github.io/pages/projects.html).
 
-<h3> Project 1: CISC 440 AI and Robotics Coding a Lego Mindstorm Robot: </h3>
-<h4>Background: </h4>
-<p>Our task was to build a Lego Mindstorm robot and edit a Python script that would cause the robot to be able to draw certain letters and short words.</p>
-<h4>Python Script Code: </h4>https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%201%20Files/Project%201.py
-<h4>Setup: </h4>
-<ol>
-  <li>
-    Set up the Lego Mindstorm Robot in "draw mode" giving it wheels and a set of rubberbands to hold a writing utensil
-  </li>
-    
-  <li>
-    While connected to the Lego Mindstorm Robot, download and run the above Python script.  This will direct the robot to draw letters (currently will draw M -> I -> L -> E)
-  </li>
-</ol>
+| Project | Course | Tools |
+|---|---|---|
+| [1. Drawing robot](#project-1-drawing-robot) | CISC 440: AI and Robotics | Python, ev3dev2, Lego Mindstorms EV3 |
+| [2. Predicting stock movement with neural networks](#project-2-predicting-stock-movement-with-neural-networks) | STAT 400: Data Mining and Machine Learning | Python (pandas), JMP |
+| [3. What makes car crashes deadlier](#project-3-what-makes-car-crashes-deadlier) | STAT 360: Computational Statistics and Data Analysis | R (lavaan, psych), draw.io |
 
-<h3> Project 2: STAT 400 Data Mining and Machine Learning Trying to Predict Stock Prices Using Neural Networks </h3>
-<h4>Background: </h4>
-<p> For our final project, two other students and tried to find a way to predict stock prices by using a neural network.  We used stock price data from the last 5 years from top tech companies.  These includeded Meta, Google, Amazon, Microsoft and Apple.  We cleaned this data using Python and fed it into a couple different neural network models and tried to see if they were able to predict stock price changes accurately. </p>
-<h4>Python Script Code: </h4> 
-https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%202%20Files/StockPriceUpOrDown.py
-<h4>Setup: </h4>
-<ol>
-  <li>
-    Download the stock price csv files here: https://github.com/nfriesen1/CISC-480-Portfolio/tree/main/Project%202%20Files/Stock%20Data
-  </li>
-    
-  <li>
-    Download the Python Script Code above and run it on each on of the downloaded csv files to clean the data.  Your data should end up looking like our  Final Data: https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%202%20Files/Final%20Dataset.xlsx
-  </li>
-  <li>
-    Download JMP Statisical Software: https://www.jmp.com/en_us/home.html, and upload the finalized data.
-  </li>
-  <li>
-    Run a neural network on the data by going to the top menu bar and clicking Analyze -> Predicitive Modeling -> Neural.
-  </li>
-  <li>
-    Change the settings to your liking and click ok.  This will create a neural network result page like this: https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%202%20Files/Final_Data%20-%20Neural.jrp
-  </li>
-</ol>
+---
 
-If you would like to learn more about this, you can refer to our final project paper here: https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%202%20Files/Final%20Project%20Paper%20Updated.docx
+## Project 1: Drawing robot
 
-<h3> Project 3: STAT 360 Comp STAT and Data Analysis Final Project Path Diagram </h3>
-<h4>Background: </h4>
-<p> For our final project, two other students and I looked at car crash data to see what factors lead to deadlier car crashes.  With our findings, we creating a path diagram showing all these factors and their connections to lower/higher mortality rates in car crashes.  We used R to clean and analyze our data.</p>
-<h4>Code: https://github.com/nfriesen1/CISC-480-Portfolio/tree/main/Project%203%20Files</h4>
-<h4>Setup: </h4>
-<ol>
-  <li>
-    Download our cleaned data file here: https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%203%20Files/Project_Data.xlsx
-  </li>
-    
-  <li>
-    Use our .RMD files and cleaned data to find useful information and connections about the data.
-  </li>
-  <li>
-    Use the info to create a large path diagram displaying connections between death rate in an accident and factors that lead to the accidents like this one: https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%203%20Files/Finished.drawio.png
-  </li>
-</ol>
+**Goal:** program a Lego Mindstorms EV3 robot to draw letters and short words with a pen.
 
-If you would like to learn more about our project, you can refer to our powerpoint: https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%203%20Files/STAT%20360%20Group%20Project%20Presentation.pptx and abstract: https://github.com/nfriesen1/CISC-480-Portfolio/blob/main/Project%203%20Files/Abstract.pdf
+The Python script ([`Project 1 Files/Project 1.py`](Project%201%20Files/Project%201.py)) treats each letter as a path through points on a grid. For every move, it works out the turn angle and distance from geometry, then converts them into wheel rotations, adjusted for the robot's wheel size and wheel spacing. A medium motor raises and lowers the pen between strokes. For the final test, the robot drew the word **MILE**.
+
+**To run it**
+1. Build the robot in "drawing" mode: wheels, plus a pen held in place with rubber bands.
+2. Raise the pen, connect to the robot, and run the script. `my_string` can be any word made from the letters defined in `sequence` (currently M, I, L and E).
+
+---
+
+## Project 2: Predicting stock movement with neural networks
+
+**Goal:** see whether a neural network could predict if a stock would close higher or lower than the day before. I did this project with two classmates.
+
+We used five years of daily prices for large tech stocks. A Python script ([`StockPriceUpOrDown.py`](Project%202%20Files/StockPriceUpOrDown.py)) labeled each day "up" or "down" by comparing its close with the previous close. We then trained and compared neural network models in JMP.
+
+**Files**
+- [`Stock Data/`](Project%202%20Files/Stock%20Data): raw price history (CSV)
+- [`Final Dataset.xlsx`](Project%202%20Files/Final%20Dataset.xlsx): the cleaned, combined dataset
+- [`Final_Data - Neural.jrp`](Project%202%20Files/Final_Data%20-%20Neural.jrp): the JMP neural network report
+- [`Final Project Paper Updated.docx`](Project%202%20Files/Final%20Project%20Paper%20Updated.docx): the full write-up
+
+**To reproduce**
+1. Run `StockPriceUpOrDown.py` on each CSV in `Stock Data/` to add the up/down label.
+2. Load the result (or `Final Dataset.xlsx`) into [JMP](https://www.jmp.com/), then go to **Analyze → Predictive Modeling → Neural** and fit a model.
+
+---
+
+## Project 3: What makes car crashes deadlier
+
+**Goal:** find which factors are linked to higher death rates in car crashes, and show how they connect. I did this project with two classmates.
+
+We cleaned and explored crash data in R. We then used **exploratory factor analysis** to group related variables into underlying factors, and **structural equation modeling** to estimate how those factors relate to crash mortality. The result is a path diagram:
+
+![Path diagram of factors related to crash mortality](Project%203%20Files/Finished.drawio.png)
+
+**Files**
+- [`EDA.Rmd`](Project%203%20Files/EDA.Rmd): exploratory data analysis
+- [`Project EFA.Rmd`](Project%203%20Files/Project%20EFA.Rmd): exploratory factor analysis (`psych`, `GPArotation`)
+- [`SEM.Rmd`](Project%203%20Files/SEM.Rmd): structural equation model (`lavaan`)
+- [`Project_Data.xlsx`](Project%203%20Files/Project_Data.xlsx): the cleaned dataset
+- [Abstract](Project%203%20Files/Abstract.pdf) · [Presentation](Project%203%20Files/STAT%20360%20Group%20Project%20Presentation.pptx)
+
+**To reproduce:** open the `.Rmd` files in RStudio, point them at `Project_Data.xlsx`, and knit them in order: EDA, then EFA, then SEM.
